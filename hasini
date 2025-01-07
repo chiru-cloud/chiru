@@ -27,6 +27,291 @@ struct ListNode* removeNthFromEnd(struct ListNode* head, int n) {
         return head;
     }
 
+
+
+struct ListNode* mergeTwoLists(struct ListNode* list1, struct ListNode* list2) {
+    // Create a dummy node to act as a placeholder for the merged list
+    struct ListNode dummy;
+    dummy.next = NULL;
+    struct ListNode* cur = &dummy;
+
+    // Traverse both lists and merge them
+    while (list1 != NULL && list2 != NULL) {
+        if (list1->val > list2->val) {
+            cur->next = list2;
+            list2 = list2->next;
+        } else {
+            cur->next = list1;
+            list1 = list1->next;
+        }
+        cur = cur->next;
+    }
+
+    // If either list still has elements, append them
+    cur->next = (list1 != NULL) ? list1 : list2;
+
+    // Return the merged list starting from the first actual element
+    return dummy.next;
+}
+
+/**
+ * Note: The returned array must be malloced, assume caller calls free().
+ */
+char **res;
+int resIdx;
+int strSize;
+void help(int l, int r, char* str, int strIdx) {
+    if(!(l||r)) {
+        res[resIdx] = (char*)calloc(strSize, sizeof(char));
+        strcpy(res[resIdx++], str);
+        return;
+    }
+    if(l) {
+        str[strIdx] = '(';
+        help(l-1, r, str, strIdx+1);
+    }
+    if(r-l) {
+        str[strIdx] = ')';
+        help(l, r-1, str, strIdx+1);
+    }
+}
+char** generateParenthesis(int n, int* returnSize) {
+    resIdx = 0;
+    strSize = n*2+1;
+    res = (char**)calloc(1<<(n*2), sizeof(char*));
+    char* str = (char*)calloc(strSize, sizeof(char));
+    help(n, n, str, 0);
+    *returnSize = resIdx;
+    return res;
+}
+
+/**
+ * Definition for singly-linked list.
+ * struct ListNode {
+ *     int val;
+ *     struct ListNode *next;
+ * };
+ */
+
+struct ListNode* merge(struct ListNode* l1, struct ListNode* l2) {
+    // base case
+    if (l1 == NULL)
+        return l2;
+    if (l2 == NULL)
+        return l1;
+
+    // case 1: value of l1 is less than value of l2
+    if (l1->val < l2->val) {
+        l1->next = merge(l1->next, l2);
+        return l1;
+    }
+    // case 2: value of l2 is less than value of l1
+    else {
+        l2->next = merge(l1, l2->next);
+        return l2;
+    }
+}
+struct ListNode* mergeSort(struct ListNode** lists, int left, int right) {
+    // base case
+    if (left == right)
+        return lists[left];
+    // case: if left<right
+    if (left < right) {
+        // devide the list in to two pieces
+        int mid = (left + right) / 2;
+        // left side: start to mid
+        struct ListNode* ll = mergeSort(lists, left, mid);
+        // right side: mid to end
+        struct ListNode* lr = mergeSort(lists, mid + 1, right);
+        // merge them
+        return merge(ll, lr);
+    } else
+        return NULL;
+}
+struct ListNode* mergeKLists(struct ListNode** lists, int listsSize) {
+    return mergeSort(lists, 0, listsSize - 1);
+}
+
+struct ListNode* swapPairs(struct ListNode* head) {
+    if (!head || !head->next) return head;
+
+    struct ListNode* newHead = head->next;
+    head->next = swapPairs(newHead->next);
+    newHead->next = head;
+    return newHead;
+}
+
+int removeDuplicates(int nums[], int numsSize) {
+    if (numsSize == 0)
+        return 0;
+    int index = 1;
+    for (int i = 1; i < numsSize; ++i) {
+        if (nums[i] != nums[i - 1]) {
+            nums[index] = nums[i];
+            ++index;
+        }
+    }
+    return index;
+}
+
+int removeElement(int* nums, int numsSize, int val) {
+    if(numsSize==0){
+        return 0;
+    }
+    int j=0;
+    for(int i=0;i<numsSize;i++){
+        if(nums[i]!=val){
+            nums[j++]=nums[i];
+        }
+    }
+    return j;
+}
+
+int strStr(char * haystack, char * needle){
+    if (strlen(needle) > strlen(haystack))
+        return -1;
+
+    for (int i = 0; i < strlen(haystack); i++) {
+        if (!strncmp(haystack + i, needle, strlen(needle))) 
+            return i;
+    }
+
+    return -1;
+}
+
+int divide(int dividend, int divisor) {
+    bool sign = (dividend <0 ^ divisor <0) ? 1 : 0;
+    int div2,res=0;
+
+    // division by 1 = dividend
+    if (divisor==1 ) 
+        return dividend;
+    if (divisor==-1) {
+        if (dividend==INT_MIN)
+            return INT_MAX;
+        return -dividend;
+    }
+    // divisor == INT_MIN have 2 option
+    // divided by itself will result 1 otherwise 0
+    if (divisor==INT_MIN)
+        return (dividend==INT_MIN) ? 1 : 0;
+
+    // half the iteration by 2 by doubling the divisor
+    // Check for overflow before dive
+    if (divisor>-1073741824 && divisor<1073741823 ) {
+        div2= divisor+divisor;
+        if (dividend>0) {
+            while ( (sign && dividend>=-div2) || ( !sign && dividend>=div2 )) {
+                dividend = (sign) ? dividend+div2 : dividend-div2;
+                res+=2;
+            }
+        } else {
+           while ( (sign && dividend<=-div2) || ( !sign && dividend<=div2 )) {
+                dividend = (sign) ? dividend+div2 : dividend-div2;
+                res+=2;
+            }
+        }
+    }
+    //check if anything left for odd division 
+    if (dividend >0 ) {
+        if ((sign && dividend>=-divisor) || ( !sign && dividend>=divisor ))
+            res++;
+    } else {
+        if ( (sign && dividend<=-divisor) || ( !sign && dividend<=divisor ))
+            res++;
+    }
+    
+    return sign ? -res : res;
+}
+
+typedef struct {
+    char* key;
+    int count;
+    UT_hash_handle hh;
+} wordcount_t;
+
+int* entry(wordcount_t** wc, char* key) {
+    wordcount_t* existing_wc;
+    HASH_FIND_STR(*wc, key, existing_wc);
+    if (existing_wc == NULL) {
+        existing_wc = malloc(sizeof(wordcount_t));
+        existing_wc->key = strdup(key);
+        existing_wc->count = 0;
+        HASH_ADD_STR(*wc, key, existing_wc);
+    }
+    return &(existing_wc->count);
+}
+
+wordcount_t* copy_hashmap(wordcount_t* original) {
+    wordcount_t* copy = NULL, *p;
+    for (p = original; p != NULL; p = p->hh.next) {
+        wordcount_t* wc = (wordcount_t*)malloc(sizeof(wordcount_t));
+        wc->key   = p->key;
+        wc->count = p->count;
+        HASH_ADD_STR(copy, key, wc);
+    }
+    return copy;
+}
+
+int* findSubstring(char* s, char** words, int wordsSize, int* returnSize) {
+    wordcount_t  *p, *tmp, *need = NULL, *orig = NULL;
+ 
+    for (int i = 0; i < wordsSize; i++) (*entry(&orig, words[i])) += 1;
+
+    int n = strlen(s);
+    int m = wordsSize;
+    int w = strlen(words[0]);
+    int total_words_len = m * w;
+    
+    int* result = malloc(sizeof(int) * n);
+    int result_count = 0;
+
+    char word[31] = {0}, prev[31] = {0};
+    for (int i = 0; i < w; i++) {
+        need = copy_hashmap(orig);  
+        int valid = 0;
+        for(int j = i; j <= n - w; j += w) {
+            strncpy(word, s + j, w);
+            word[w] = '\0';
+            HASH_FIND_STR(need, word, tmp);
+            if (tmp && tmp->count > 0) valid += 1;
+
+            (*entry(&need, word)) -= 1;
+            if (j >= total_words_len) {
+                int idx = j - total_words_len;
+                strncpy(prev, s + idx, w);
+                prev[w] = '\0';
+                int* num = entry(&need, prev);
+                *num += 1;
+                if (*num > 0) { valid--;}
+            }
+            if (valid == m) {result[result_count++] = j + w - total_words_len;}
+        }
+    }
+    *returnSize = result_count;
+    return result;
+}
+
+int searchInsert(int* nums, int numsSize, int target) {
+    for(int i=0;i<numsSize;i++){
+            if(nums[i]==target){
+                    return i;
+            }
+    }
+        for(int j=0;j<numsSize;j++){
+            if(nums[j]>target){
+                    return j;
+            }
+        }
+            for(int k=0;k<numsSize;k++){
+                    if(nums[k]!=target){
+                            return numsSize;
+                    }
+            }
+        return 0;
+}
+
+
     // Traverse to the node before the one to be removed
     while (i < traverseTill) {
         curr = curr->next;
